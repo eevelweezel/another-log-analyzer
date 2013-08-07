@@ -1,84 +1,49 @@
-# Need to break out Active Links, Filters, SQL statements, and Errors
-# Gen a list of these for each input
-# Run a diff for stuff that executes in one log and not the other
-# ... maybe allow comparison a block at a time?
+# Read a log into a list
+# Extract the names of the executing workflow objects
 #
-# ActiveLink: CDB:EM-SetJournalDetails - Fri Jul 19 2013 10:55:00 AM
-# note ": " and " -" denote start/end of name & line begins w/ "Active Link"
+# Eventually, process two logs
+#
+# Run a diff for stuff that executes in one log and not the other
+# 
+# Write the output to a separate file
+# 
 
-# set inputs
+# inputs... fix me, eventually.
+"""
 print('Logfile 1 and path:')
 x = input()
 print('Logfile 2 and path:')
 y = input()
 print('Specify a file name for output:')
 z = input()
+"""
+print('Feed me, Seymour!')
+x = '/home/eevel/test_data/tl3.txt'
+z = '/home/eevel/test_data/tlo.txt'
 
 log_output = open(z,'w')
 
-# loop through logs & parse into lists
-def parse_stuff(a):
+def parse_log(a,b):
+    """ Read the log, then construct a list of lists containing line #, type,
+    and name of each executing object """
     log = open(a, 'r')
-    lines_in = log.readlines()
-    actl = []
-    fltr = []
-#    sql = []
-#    api = []
+    lines_in = list(log)
     for line in lines_in:
-        if line.startswith('Active Link',0,len(line)):
-            actl.append(line[line.find(':',0,len(line)):line.find('-',0,len(line))])
-        elif line.startswith('<FLTR>',0,len(line)):
-            fltr.append(line)
-#        elif line.startswith('<SQL >',0,len(line)):
-#            sql.append(str(line[0:line.index(len(line))]))
-#        elif line.startswith('<API >',0,len(line)):
-#            api.append(str(line[0:line.index(len(line))]))
-    return lines_in, actl, fltr #, sql, api	
+        if "Active Link:" in line and '\n' in line:
+            b.append([line[line.index(': ')+2:line.index('- ')], log.tell(), 'Active Link'])
+        elif "<FLTR>" in line and '\n' in line:
+            b.append([line[line.index('Checking \"')+10:line.index('\" ')], lines_in.index(line), 'Filter'])
+        elif "<SQL" in line and '\n' in line:
+            b.append([line[line.index('*/')+2:line.index('\n')], lines_in.index(line), 'SQL'])
+        elif "<API >" in line and '\n' in line:
+            b.append([line[line.index('*/')+2:line.index('\n')], lines_in.index(line), 'API'])
+        else: 
+            pass
+    return b
 
-parse_stuff(x)
-#a_links(lines_in)
-#print(str(actl))
+x_out = []
+parse_log(x,x_out)
 
-"""			
-# gen a list for filter execution	
-def filters(lines_in):
-	fltr = []
-	for line in lines_in:
-		if line.startswith('Filter',0,len(line))
-			actl.append(line.tell()+' '+(line[line.index(':'):line.index('-')]))
-	return fltr
-			
-# gen a list for SQL execution	
-def sql(lines_in):
-	sql_st = []
-	for line in lines_in:
-		if line.startswith('<SQL>',0,len(line))
-			actl.append(line.tell()+' '+(line[line.index(':'):line.index('-')]))
-	return sql_st
-
-# concat the output into one string	
-def concat(lines_in):
-	log_out = ''
-	for line in lines_in:
-		log_out = log_out+item
-	pickle.dump(log_out,log_output)
-	return log_out
-
-# process log & output to string
-def process_log(d):
-	active_links(d)
-	filters(d)
-	sql(d)
-	concat(d)
-	return d
-
-# business starts here	
-parse_this(x)	
-process_log(lines_x)
-parse_this(y)
-process_log(lines_y)
-
-# cleanup
-log_output.close()
-"""
+for line in x_out:
+    log_output.write(str(line[1])+': '+line[0]+' ('+line[2]+')\n')
 
