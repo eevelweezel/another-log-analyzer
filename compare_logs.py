@@ -32,6 +32,9 @@ log_output = open(z,'w')
 
 wf = ['Active Link', 'SQL', 'Filter', 'API']
 
+# actual business...
+munchyMunch(x,y)
+
 def parse_log(a,b):
     
     """ 
@@ -86,9 +89,11 @@ def munchyMunch(l1,l2):
     list2 = []
     a = []
     b = []
+# parse files    
     parse_log(l1, list1)
     parse_log(l2, list2)
     sl_out = []
+# loop through wf types, compare logs 1 & 2  
     for i in wf:
         for j in list1:    
             if (j[2] == i):
@@ -101,16 +106,18 @@ def munchyMunch(l1,l2):
             return b
 #        return b
         s_out = set(a ^ b)
-        return s_out
-    log_output.write('Disjoint '+i+':\n\n')
-    for line in s_out:
-        log_output.write(str(line))
-        log_output.write('\n\n\n')
-        return    
+#  output distinct lines (should happen X 4)
+        log_output.write('Disjoint '+i+':\n\n')
+        for line in s_out:
+            log_output.write(str(line))
+            log_output.write('\n\n\n')  
+            return s_out
+# output stuff from file 1
     log_output.write('Log 1 Workflow Actions:\n\n') 
     for line in list1:
         log_output.write(str(line[1])+': '+line[0]+' ('+line[2]+')\n')
         return
+# output stuff from file 2
     log_output.write('Log 2 Workflow Actions:\n\n')    
     for line in list2:
         log_output.write(str(line[1])+': '+line[0]+' ('+line[2]+')\n')
@@ -160,4 +167,4 @@ for line in y_out:
 log_output.write('\n\n\n')
 """
 
-munchyMunch(x,y)
+
