@@ -7,15 +7,22 @@
 # 
 # 
 
-# inputs... fix me, eventually.
 """
+# log 1 input
 print('Logfile 1 and path:')
 x = input()
+
+# log 2 input
 print('Logfile 2 and path:')
 y = input()
+
+# output file
 print('Specify a file name for output:')
 z = input()
 """
+
+
+# junk for testing only
 print('Feed me, Seymour!')
 x = '/home/eevel/test_data/tl2.txt'
 y = '/home/eevel/test_data/tl1.txt'
@@ -23,73 +30,99 @@ z = '/home/eevel/test_data/tlo.txt'
 
 log_output = open(z,'w')
 
-def parse_log(a,b,c):
-    """ Read the log, then construct a list of lists containing line #, type,
+wf = ['Active Link', 'SQL', 'Filter', 'API']
+
+def parse_log(a,b):
+    
+    """ 
+    a = file input
+    b = file output
+    c = integer that indicated the source file...? I think C can go away. 
+    
+    Read the log, then construct a list of lists containing line #, type,
     and name of each executing object. 
-    Need to make this tolerant of windows-style line endings """
+    Need to make this tolerant of windows-style line endings 
+
+    ... There's GOT to be a cleaner way to parse this stuff.  
+    This should also be re-written to use the 'wf' list dynamically.
+    """
+    
     log = open(a, 'r')
     lines_in = list(log)
     for line in lines_in:
         if "Active Link:" in line and '\n' in line:
-            b.append([c,line[line.index(': ')+2:line.index('- ')], log.tell(), 'Active Link'])
+            b.append([line[line.index(': ')+2:line.index('- ')], log.tell(), 'Active Link'])
         elif "<FLTR>" in line and '\n' in line:
-            b.append([c,line[line.index('Checking "')+10:line.index('" ')], lines_in.index(line), 'Filter'])
+            b.append([line[line.index('Checking "')+10:line.index('" ')], lines_in.index(line), 'Filter'])
         elif "<SQL" in line and '\n' in line:
-            b.append([c,line[line.index('*/')+2:line.index('\n')], lines_in.index(line), 'SQL'])
+            b.append([line[line.index('*/')+2:line.index('\n')], lines_in.index(line), 'SQL'])
         elif "<API >" in line and '\n' in line:
-            b.append([c,line[line.index('*/')+2:line.index('\n')], lines_in.index(line), 'API'])
+            b.append([line[line.index('*/')+2:line.index('\n')], lines_in.index(line), 'API'])
         else: 
             pass
     return b
 
-
-def set_builder(d,e,f):
-    """ From results, construct a set of workflow object names """
-    for line in d:
-        if line[3] == e:
-            f.add(line[3])
-        else:
-            pass
-    return f
-
-
-x_out = []
-x_al = set()
-x_fil = set()
-x_sql = set()
-
-
-parse_log(x,x_out,1)
-
-set_builder(x_out,"Active Link",x_al)
-
-set_builder(x_out,"Filter",x_fil)
-
-set_builder(x_out,"SQL",x_sql)
+# Think this can go away...
+#def set_builder(d,e,f):
+    """ From results, construct a set of workflow object names 
+    d = list of list-format output from parse_logs() (see above for index #s)
+    e = text name of workflow 
+    f = list-format output
+    
+    """
+#    for line in d:
+#        if line[2] == e:
+#            f.add(line[2])
+#        else:
+#            pass
+#    return f
 
 
-y_out = []
-y_al = set()
-y_fil = set()
-y_sql = set()
-
-parse_log(y,y_out,2)
-
-set_builder(y_out,"Active Link",y_al)
-
-set_builder(y_out,"Filter",y_fil)
-
-set_builder(y_out,"SQL",y_sql)
-
-
-# try new test files... these are suspiciously null?
+def munchyMunch(l1,l2):
+# Expects a list w/ two items - wf type & output list
+# list1 = input 1
+# list2 = input 2
+    list1 = []
+    list2 = []
+    a = []
+    b = []
+    parse_log(l1, list1)
+    parse_log(l2, list2)
+    sl_out = []
+    for i in wf:
+        for j in list1:    
+            if (j[2] == i):
+                a.add(j)
+            return a
+#        return a
+        for k in list2:
+            if (k[2] == i):
+                b.add(k)
+            return b
+#        return b
+        s_out = set(a ^ b)
+        return s_out
+    log_output.write('Disjoint '+i+':\n\n')
+    for line in s_out:
+        log_output.write(str(line))
+        log_output.write('\n\n\n')
+        return    
+    log_output.write('Log 1 Workflow Actions:\n\n') 
+    for line in list1:
+        log_output.write(str(line[1])+': '+line[0]+' ('+line[2]+')\n')
+        return
+    log_output.write('Log 2 Workflow Actions:\n\n')    
+    for line in list2:
+        log_output.write(str(line[1])+': '+line[0]+' ('+line[2]+')\n')
+    return log_output                  
+    
+""" junk refactored into munchyMunch               
 
 al_out = set(x_al ^ y_al)
 
 fil_out = set(x_fil ^ y_fil)
 
 sql_out = set(x_sql ^ y_sql)
-
 
 log_output.write('Disjoint Active links:\n\n')
 
@@ -115,15 +148,16 @@ log_output.write('\n\n\n')
 log_output.write('Log 1 Workflow Actions:\n\n')
 
 for line in x_out:
-    log_output.write(str(line[2])+': '+line[1]+' ('+line[3]+')\n')
+    log_output.write(str(line[1])+': '+line[0]+' ('+line[2]+')\n')
 
 log_output.write('\n\n\n')
 
 log_output.write('Log 2 Workflow Actions:\n\n')
 
 for line in y_out:
-    log_output.write(str(line[2])+': '+line[1]+' ('+line[3]+')\n')
+    log_output.write(str(line[1])+': '+line[0]+' ('+line[2]+')\n')
 
 log_output.write('\n\n\n')
+"""
 
-
+munchyMunch(x,y)
