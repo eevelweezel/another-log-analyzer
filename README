@@ -1,1 +1,9 @@
-This is yet another log analyzer for Remedy Action Request System.  It doesn't do all that much as of yet. 
+This is a log analyzer for the Remedy Action Request Server.  
+
+The purpose of this thing is to compare client-side logs from two different environments, (e.g., dev and prod).  As of yet, it does NOT compare server-side logs.  Also, the formatting of some of the output could really use some help.
+
+Understanding Output
+
+Disjoint workflow - this section lists workflow that executes in only one environment. 
+
+Workflow actions - this section lists the individual workflow actions and line number from the original log file. 
