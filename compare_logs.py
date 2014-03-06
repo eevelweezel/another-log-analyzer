@@ -1,7 +1,6 @@
-# Compare two logs & spit out interesting observations...
-# Extract the names of the executing workflow objects
-#
-# Run a diff for stuff that executes in one log and not the other
+#!/usr/bin/env python3
+import re
+
 # 
 # Stuff that would make this more intersting: find errors, loops...?
 # 
@@ -19,15 +18,16 @@ y = input()
 # output file
 print('Specify a file name for output:')
 z = input()
+
+
 """
-
-
 # junk for testing only
 print('Feed me, Seymour!')
 x = '/home/eevel/test_data/tl2.txt'
 y = '/home/eevel/test_data/tl1.txt'
 z = '/home/eevel/test_data/tlo.txt'
 """
+
 log_output = open(z,'w')
 
 wf = ['ActiveLink', '<SQL >', '<FLTR>', '<API >']
@@ -37,30 +37,30 @@ def parse_log(a,b):
     
     """ 
     a = file input
-    b = file output
-    c = integer that indicated the source file...? I think C can go away. 
+    b = file output 
     
     Read the log, then construct a list of lists containing line #, type,
     and name of each executing object. 
-    Need to make this tolerant of windows-style line endings 
 
     ... There's GOT to be a cleaner way to parse this stuff.  
 
+    Still need to deal w/ line endings... error handling...?
+
     """
     
-    log = open(a, 'r')
+    log = open(a, 'rt')
     lines_in = list(log)
     for line in lines_in:
-        if "ActiveLink:" in line and '\n' in line:
+        if "ActiveLink:" in line and ('\n' in line or  '\r\n' in line):
             b.append([line[line.index(': ')+2:line.index('- ')], log.tell(), 'ActiveLink'])
-        elif "<FLTR>" in line and '\n' in line:
-            b.append([line[line.index('Checking "')+10:line.index('" ')], lines_in.index(line), '<FLTR>'])
-        elif "<SQL >" in line and '\n' in line:
-            b.append([line[line.index('*/')+2:line.index('\n')], lines_in.index(line), '<SQL >'])
-        elif "<API >" in line and '\n' in line:
-            b.append([line[line.index('*/')+2:line.index('\n')], lines_in.index(line), '<API >'])
+#        elif "<FLTR>" in line and ('\n' in line or  '\r\n' in line):
+#            b.append([line[line.index('Checking "')+10:line.index('" ')], lines_in.index(line), '<FLTR>'])
+        elif "<SQL >" in line and ('\n' in line or  '\r\n' in line):
+            b.append([line[line.index('*/')+2:(len(line))], lines_in.index(line), '<SQL >'])
+        elif "<API >" in line and ('\n' in line or  '\r\n' in line):
+            b.append([line[line.index('*/')+2:(len(line))], lines_in.index(line), '<API >'])
         else: 
-            pass
+            continue
     return b
 
 
