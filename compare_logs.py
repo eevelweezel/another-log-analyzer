@@ -1,37 +1,9 @@
 #!/usr/bin/env python3
-import re
+import sys
 
 # 
 # Stuff that would make this more intersting: find errors, loops...?
 # 
-# 
-
-
-# log 1 input
-print('Logfile 1 and path:')
-x = input()
-
-# log 2 input
-print('Logfile 2 and path:')
-y = input()
-
-# output file
-print('Specify a file name for output:')
-z = input()
-
-
-"""
-# junk for testing only
-print('Feed me, Seymour!')
-x = '/home/eevel/test_data/tl2.txt'
-y = '/home/eevel/test_data/tl1.txt'
-z = '/home/eevel/test_data/tlo.txt'
-"""
-
-log_output = open(z,'w')
-
-wf = ['ActiveLink', '<SQL >', '<FLTR>', '<API >']
-
 
 def parse_log(a,b):
     
@@ -39,29 +11,35 @@ def parse_log(a,b):
     a = file input
     b = file output 
     
-    Read the log, then construct a list of lists containing line #, type,
-    and name of each executing object. 
+    Read the log, convert to universal line endings, then construct a list of 
+    lists containing line #, type, and name of each object.   
 
-    ... There's GOT to be a cleaner way to parse this stuff.  
-
-    Still need to deal w/ line endings... error handling...?
+    um... error handling...?
 
     """
     
-    log = open(a, 'rt')
-    lines_in = list(log)
-    for line in lines_in:
-        if "ActiveLink:" in line and ('\n' in line or  '\r\n' in line):
-            b.append([line[line.index(': ')+2:line.index('- ')], log.tell(), 'ActiveLink'])
-#        elif "<FLTR>" in line and ('\n' in line or  '\r\n' in line):
-#            b.append([line[line.index('Checking "')+10:line.index('" ')], lines_in.index(line), '<FLTR>'])
-        elif "<SQL >" in line and ('\n' in line or  '\r\n' in line):
-            b.append([line[line.index('*/')+2:(len(line))], lines_in.index(line), '<SQL >'])
-        elif "<API >" in line and ('\n' in line or  '\r\n' in line):
-            b.append([line[line.index('*/')+2:(len(line))], lines_in.index(line), '<API >'])
-        else: 
+    with open(a, 'rt+') as log:
+        lines_in = list(log)
+        for i in lines_in:
+            if '\r\n' in i:
+                l = i.replace('\r\n','\n')
+                lines_in.insert(log.tell(),l)
+                lines_in.remove(i)
+            else:
+                pass
             continue
-    return b
+        for line in lines_in:
+            if "ActiveLink:" in line and ('\n' in line or  '\r\n' in line):
+                b.append([line[line.index(': ')+2:line.index('- ')], log.tell(), 'ActiveLink'])
+            elif "<FLTR>" in line and ('\n' in line or  '\r\n' in line):
+                b.append([line[line.index('Checking "')+10:line.index('" ')], lines_in.index(line), '<FLTR>'])
+            elif "<SQL >" in line and ('\n' in line or  '\r\n' in line):
+                b.append([line[line.index('*/')+2:(len(line))], lines_in.index(line), '<SQL >'])
+            elif "<API >" in line and ('\n' in line or  '\r\n' in line):
+                b.append([line[line.index('*/')+2:(len(line))], lines_in.index(line), '<API >'])
+            else: 
+                continue
+        return b
 
 
 def munchyMunch(l1,l2):
@@ -116,7 +94,9 @@ def munchyMunch(l1,l2):
     
 
 # actual business...
-munchyMunch(x,y)
 
-print('Complete.  Check '+z+' for output.')
+with open(sys.argv[3],'wt+') as log_output:
+    wf = ['ActiveLink', '<SQL >', '<FLTR>', '<API >']
+    munchyMunch(sys.argv[1],sys.argv[2])
+    print('Complete.  Check '+sys.argv[3]+' for output.')
 
