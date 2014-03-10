@@ -23,21 +23,25 @@ def parse_log(a,b):
         for i in lines_in:
             if '\r\n' in i:
                 l = i.replace('\r\n','\n')
-                lines_in.insert(log.tell(),l)
+                lines_in.insert(lines_in.index(i),l)
                 lines_in.remove(i)
             else:
                 pass
             continue
         for line in lines_in:
-            if "ActiveLink:" in line and ('\n' in line or  '\r\n' in line):
-                b.append([line[line.index(': ')+2:line.index('- ')], log.tell(), 'ActiveLink'])
-            elif "<FLTR>" in line and ('\n' in line or  '\r\n' in line):
-                b.append([line[line.index('Checking "')+10:line.index('" ')], lines_in.index(line), '<FLTR>'])
-            elif "<SQL >" in line and ('\n' in line or  '\r\n' in line):
-                b.append([line[line.index('*/')+2:(len(line))], lines_in.index(line), '<SQL >'])
-            elif "<API >" in line and ('\n' in line or  '\r\n' in line):
-                b.append([line[line.index('*/')+2:(len(line))], lines_in.index(line), '<API >'])
-            else: 
+            try:
+                if 'ActiveLink:' in line and ('\n' in line):
+                    b.append([line[line.index(': ')+2:line.index('- ')], lines_in.index(line), 'ActiveLink'])
+                elif '<FLTR>' in line and ('\n' in line):
+                    b.append([line[line.index('Checking "')+10:line.index('" ')], lines_in.index(line), '<FLTR>'])
+                elif '<SQL >' in line and ('\n' in line) and ('OK' not in line):
+                    b.append([line[line.index('*/')+2:(line.index('\n'))], lines_in.index(line), '<SQL >'])
+                elif '<API >' in line and ('\n' in line):
+                    b.append([line[line.index('*/')+2:(len(line))], lines_in.index(line), '<API >'])
+                else: 
+                    continue
+            except ValueError: 
+#                b.append(' - ')
                 continue
         return b
 
@@ -63,28 +67,33 @@ def munchyMunch(l1,l2):
         s_out = set()
         
         for j in list1:    
-            if (j[2] == i):
-                a.add(j[0])
-
+            try:
+                if (j[2] == i):
+                    a.add(j[0])
+            except ValueError:
+                continue
         for k in list2:
-            if (k[2] == i):
-                b.add(k[0])
-                
+            try:
+                if (k[2] == i):
+                    b.add(k[0])
+            except ValueError:
+                continue    
         s_out = set(a ^ b)
         
 #  output distinct lines (should happen X 4)
         log_output.write('Disjoint '+i+':\n\n')
         
         for line in s_out:
-                log_output.write(str(line))
-                log_output.write('\n\n\n')  
+                log_output.write(str(line)+'\n')
+        log_output.write('\n\n\n')  
 
 # output stuff from file 1
     log_output.write('Log 1 Workflow Actions:\n\n') 
     
     for line in list1:
         log_output.write(str(line[1])+': '+line[0]+' ('+line[2]+')\n')
-
+    
+    log_output.write('\n\n\n')   
 # output stuff from file 2
     log_output.write('Log 2 Workflow Actions:\n\n')    
     for line in list2:
