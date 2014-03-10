@@ -1,9 +1,14 @@
 This is a log analyzer for the Remedy Action Request Server.  
 
-The purpose of this thing is to compare client-side logs from two different environments, (e.g., dev and prod).  As of yet, it does NOT compare server-side logs.  Also, the formatting of some of the output could really use some help.
+The purpose of this thing is to compare client-side logs from two different 
+environments, (e.g., dev and prod).  To compare logs, pass the file names as 
+parameters from the CLI. Specify a third file name for output, e.g.:
+
+$ python3 compare_logs.py /some_dir/logfile1.txt /some_dir/logfile2.txt /some_dir/output_file.txt
 
 Understanding Output
 
 Disjoint workflow - this section lists workflow that executes in only one environment. 
 
-Workflow actions - this section lists the individual workflow actions and line number from the original log file. 
+Workflow actions - this section lists the individual workflow actions and line 
+number from the original log file. 
