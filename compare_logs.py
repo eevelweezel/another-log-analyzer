@@ -29,15 +29,32 @@ def parse_log(a,b):
                 pass
             continue
         for line in lines_in:
+            check_exec = 'YAY! THING!'
             try:
-                if 'ActiveLink:' in line and ('\n' in line):
-                    b.append([line[line.index(': ')+2:line.index('- ')], lines_in.index(line), 'ActiveLink'])
-                elif '<FLTR>' in line and ('\n' in line):
-                    b.append([line[line.index('Checking "')+10:line.index('" ')], lines_in.index(line), '<FLTR>'])
-                elif '<SQL >' in line and ('\n' in line) and ('OK' not in line):
-                    b.append([line[line.index('*/')+2:(line.index('\n'))], lines_in.index(line), '<SQL >'])
-                elif '<API >' in line and ('\n' in line):
-                    b.append([line[line.index('*/')+2:(len(line))], lines_in.index(line), '<API >'])
+                if 'ActiveLink:' in line:
+                    if 'True' in lines_in[lines_in.index(line)+2]:
+                        check_exec = '\n    true\n' 
+                    else: 
+                        check_exec = '\n    false\n'
+                    b.append([line[line.index(': ')+2:line.index('- ')], lines_in.index(line)+1, 'ActiveLink', check_exec])
+                elif '<FLTR>' in line:
+                    if 'Passed' in lines_in[lines_in.index(line)+1]:
+                        check_exec = '\n    true\n' 
+                    else: 
+                        check_exec = '\n    false\n'
+                    b.append([line[line.index('Checking "')+10:line.index('" ')], lines_in.index(line)+1, '<FLTR>', check_exec])
+                elif '<SQL >' in line and ('OK' not in line):
+                    if 'OK' in lines_in[lines_in.index(line)+1]:
+                        check_exec = '\n    true\n' 
+                    else: 
+                        check_exec = '\n    false\n'
+                    b.append([line[line.index('*/')+2:(line.index('\n'))], lines_in.index(line)+1, '<SQL >', check_exec])
+                elif '<API >' in line and ('\n' in line) and ('call' not in line) and ('OK' not in line):
+                    if 'error' not in line:
+                        check_exec = '\n    true\n' 
+                    else: 
+                        check_exec = '\n    false\n'
+                    b.append([line[line.index('*/')+2:(line.index('\n'))], lines_in.index(line)+1, '<API >', check_exec])
                 else: 
                     continue
             except ValueError: 
@@ -91,13 +108,13 @@ def munchyMunch(l1,l2):
     log_output.write('Log 1 Workflow Actions:\n\n') 
     
     for line in list1:
-        log_output.write(str(line[1])+': '+line[0]+' ('+line[2]+')\n')
+        log_output.write(str(line[1])+': '+line[0]+' ('+line[2]+') '+line[3]+'\n')
     
     log_output.write('\n\n\n')   
 # output stuff from file 2
     log_output.write('Log 2 Workflow Actions:\n\n')    
     for line in list2:
-        log_output.write(str(line[1])+': '+line[0]+' ('+line[2]+')\n')
+        log_output.write(str(line[1])+': '+line[0]+' ('+line[2]+') '+line[3]+'\n')
     log_output.close()
     return                
     
