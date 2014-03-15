@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-
+import re
 # 
 # Stuff that would make this more intersting: find errors, loops...?
 # 
@@ -14,7 +14,7 @@ def parse_log(a,b):
     Read the log, convert to universal line endings, then construct a list of 
     lists containing line #, type, and name of each object.   
 
-    um... error handling...?
+    um... maybe find errors?
 
     """
     
@@ -28,37 +28,46 @@ def parse_log(a,b):
             else:
                 pass
             continue
+        dt_mask = re.compile(r'.[\s]?[A-za-z]{3}[\s]?[A-za-z]{3}[\s]?[0-9]{2}[\s]?[0-9]{4}')
+        err_flag = re.compile(r'<[A-Z]{3}.>')
         for line in lines_in:
             check_exec = 'YAY! THING!'
+            m = dt_mask.search(line)
+            ef = err_flag.search(line)
+            n = lines_in.index(line)+1
             try:
                 if 'ActiveLink:' in line:
-                    if 'True' in lines_in[lines_in.index(line)+2]:
+                    if 'True' in lines_in[n+1]:
                         check_exec = '\n    true\n' 
                     else: 
                         check_exec = '\n    false\n'
-                    b.append([line[line.index(': ')+2:line.index('- ')], lines_in.index(line)+1, 'ActiveLink', check_exec])
+                    b.append([line[line.index(': ')+2:line.index(m.group(0))], n, 'ActiveLink', check_exec])
                 elif '<FLTR>' in line:
-                    if 'Passed' in lines_in[lines_in.index(line)+1]:
+                    if 'Passed' in lines_in[n]:
                         check_exec = '\n    true\n' 
                     else: 
                         check_exec = '\n    false\n'
-                    b.append([line[line.index('Checking "')+10:line.index('" ')], lines_in.index(line)+1, '<FLTR>', check_exec])
+                    b.append([line[line.index('Checking "')+10:line.index('" ')], n, '<FLTR>', check_exec])
                 elif '<SQL >' in line and ('OK' not in line):
-                    if 'OK' in lines_in[lines_in.index(line)+1]:
-                        check_exec = '\n    true\n' 
+                    if 'OK' in lines_in[n]:
+                        check_exec = '\n' 
                     else: 
                         check_exec = '\n    false\n'
-                    b.append([line[line.index('*/')+2:(line.index('\n'))], lines_in.index(line)+1, '<SQL >', check_exec])
+                    b.append([line[line.index('*/')+2:(line.index('\n'))], n, '<SQL >', check_exec])
                 elif '<API >' in line and ('\n' in line) and ('call' not in line) and ('OK' not in line):
-                    if 'error' not in line:
-                        check_exec = '\n    true\n' 
-                    else: 
-                        check_exec = '\n    false\n'
+                    check_exec = '\n' 
                     b.append([line[line.index('*/')+2:(line.index('\n'))], lines_in.index(line)+1, '<API >', check_exec])
                 else: 
                     continue
-            except ValueError: 
-#                b.append(' - ')
+            except ValueError:
+                continue
+            try:
+                if 'ARERROR' in line:
+                    check_exec = '\n    '+ef.group(0)+' '+line+'\n' 
+                    b.append([line[line.index('ARERROR'):line.index('\n')]+' '+ef.group(0), n, 'ARError', check_exec])
+                else: 
+                    continue
+            except ValueError:
                 continue
         return b
 
@@ -122,7 +131,7 @@ def munchyMunch(l1,l2):
 # actual business...
 
 with open(sys.argv[3],'wt+') as log_output:
-    wf = ['ActiveLink', '<SQL >', '<FLTR>', '<API >']
+    wf = ['ARError', 'ActiveLink', '<SQL >', '<FLTR>', '<API >']
     munchyMunch(sys.argv[1],sys.argv[2])
     print('Complete.  Check '+sys.argv[3]+' for output.')
 
